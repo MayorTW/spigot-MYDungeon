@@ -1,0 +1,12 @@
+name: MYDungeon
+main: tw.mayortw.mydungeon.MYDungeon
+version: 0.0.1
+commands:
+  dungeon:
+    usage: "Usage: /<dungeon|dg> <action> [...args]
+            Supported actions:
+                test"
+    permission: mydungeon.manage
+permissions:
+  mydungeon.manage:
+    default: op

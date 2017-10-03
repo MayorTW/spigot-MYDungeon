@@ -22,7 +22,8 @@
 hs_err_pid*
 
 ### gradle ###
-/.gradle/
+.gradle/
+build/
 
 ### eclipse ###
 .metadata
@@ -74,3 +75,6 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
+
+# Debug directory
+run/

@@ -3,9 +3,8 @@ main: tw.mayortw.mydungeon.MYDungeon
 version: 0.0.1
 commands:
   dungeon:
-    usage: "Usage: /<dungeon|dg> <action> [...args]
-            Supported actions:
-                test"
+    aliases: dg
+    usage: "/<dungeon|dg> <action> [...args]\nSupported actions:\ntest"
     permission: mydungeon.manage
 permissions:
   mydungeon.manage:

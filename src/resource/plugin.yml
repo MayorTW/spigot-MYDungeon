@@ -1,10 +1,10 @@
 name: MYDungeon
-main: tw.mayortw.mydungeon.MYDungeon
+main: tw.mayortw.mydungeon.MYDungeonPlugin
 version: 0.0.1
 commands:
   dungeon:
     aliases: dg
-    usage: "/<dungeon|dg> <action> [...args]\nSupported actions:\ntest"
+    usage: "/<dungeon|dg> <action> [...args]\nSupported actions:\n  create"
     permission: mydungeon.manage
 permissions:
   mydungeon.manage:

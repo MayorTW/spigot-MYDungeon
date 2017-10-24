@@ -18,6 +18,7 @@ repositories {
     flatDir {
        dirs 'lib'
     }
+    maven { url "http://repo.dmulloy2.net/content/groups/public/" }
 }
 
 version = "0.0.1"
@@ -39,6 +40,7 @@ dependencies {
     //compile 'org.slf4j:slf4j-api:1.7.21'
     
     compile name: "spigot-api-1.12.2-R0.1-SNAPSHOT-shaded"
+    compileOnly group: "com.comphenix.protocol", name: "ProtocolLib", version: "4.3.0";
 
     // Declare the dependency for your favourite test framework you want to use in your tests.
     // TestNG is also supported by the Gradle Test task. Just change the

@@ -10,5 +10,6 @@
 			<attribute name="source_encoding" value="UTF-8"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="Z:/Programming/minecraft/plugins/spigot-MYDungeon/lib/spigot-1.12.2.jar"/>
 	<classpathentry kind="output" path="bin/target"/>
 </classpath>

@@ -1,0 +1,33 @@
+### Each line should always be a key-value pair. ###
+
+# Dungeon Portal Configuration Book
+configbook.displayname: "傳送門設定"
+configbook.content.page1: |
+  使用§1<dg>§r或§1<dungeon>§r標籤設定副本傳送門。
+  ※標籤屬性： (§l*§r 為必須)
+  - w|world§l*§r §8副本世界名稱。§r
+  - x§l*§r §8副本x座標。§r
+  - y§l*§r §8副本y座標。§r
+  - z§l*§r §8副本z座標。§r
+  - n|name §8副本名稱。§r
+  - p|players §8玩家清單。§r
+  - t|teams §8隊伍清單。§r
+  ※空白字元: 字串、清單可以單/雙引號括住以保留空白字元。
+configbook.content.page2: |
+  ※清單格式:
+  §71.§r 清單列出一至數個玩家/隊伍名稱，名稱之間以§1§n逗號(,)§r區隔。
+  §72.§r 名稱前面可加上§1§n加號(+)§r、§1§n減號(-)§r兩種運算子，加號表示允許該玩家進入，減號表示禁止該玩家進入。
+  §73.§r 名稱可以§1§n萬用字元(*)§r表示所有玩家，萬用字元前面也可以使用前述的§1§n運算子(+-)§r。
+configbook.content.page3: |
+  §74.§r 清單為空時，表示不允許所有玩家/隊伍。
+  
+  §75.§r 範例
+  §2§np="+*,-p1,-p2"§r §7允許除了§4p1§r§7和§4p2§r§7以外的玩家進入副本。§r
+  §2§nt=+t1 p=-p1§r §7僅允許§1t1§r§7隊伍§4p1§r§7以外的所有玩家進入副本。§r
+  
+configbook.content.page4: |
+  ※設定完畢後，手持設定右鍵傳送門告示牌即可。
+  
+  ※請在此設定§7§o(§r§l§7不要§r§7§o在此處套用樣式代碼)§r
+  
+  

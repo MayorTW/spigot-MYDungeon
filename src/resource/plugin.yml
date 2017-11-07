@@ -9,3 +9,7 @@ commands:
 permissions:
   mydungeon.manage:
     default: op
+  mydungeon.portal.config:
+    description: "To manage the configuration of each portal by right-clicking on it"
+    default: op
+    

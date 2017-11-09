@@ -2,26 +2,29 @@ package tw.mayortw.mydungeon;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
-
 import tw.mayortw.mydungeon.dungeon.Dungeon;
+import tw.mayortw.mydungeon.exception.PortalCountExceedException;
 import tw.mayortw.mydungeon.portal.Portal;
 
 public final class DungeonManager {
 	private int MAX_DUNGEONS;
+	private int MAX_PORTALS;
 	private File PORTALS_FILE;
 	
 	private Plugin plugin;
-	
+
 	private Map<String, Dungeon> dungeons = new HashMap<String, Dungeon>();
 	private Map<String, Portal> portals = new HashMap<String, Portal>();
 	
@@ -30,27 +33,41 @@ public final class DungeonManager {
 		
 		FileConfiguration config = this.plugin.getConfig();
 		this.MAX_DUNGEONS = config.getInt("max-dungeons", 10);
+		this.MAX_PORTALS = config.getInt("max-portals", 10);
 		this.PORTALS_FILE = new File(this.plugin.getDataFolder().getAbsolutePath(), "portals.dat");
+		
+		this.loadAll();
 	}
 	
-	public String addPortal (Portal portalIn) {
-		String index = null;
+	/**
+	 * add or edit a portal config
+	 * @param portalIn
+	 * @return
+	 * @throws PortalCountExceedException
+	 */
+	public String addPortal (Portal portalIn) throws PortalCountExceedException {
+		String index = "";
 		if (portalIn != null) {
 			index = Portal.getIndex(portalIn);
-			this.portals.put(index, portalIn);
-			this.savePortals();
+			if (this.portals.containsKey(index) || this.portals.size() < this.MAX_PORTALS) {
+				this.portals.put(index, portalIn);
+				this.savePortals();
+			} else {
+				throw new PortalCountExceedException(this.portals.size());
+			}
 		}
 		
 		return index;
 	}
 
-	public void removePortal (Location locationIn) {
-		this.removePortal(Portal.getIndex(locationIn));
+	public String removePortal (Location locationIn) {
+		return this.removePortal(Portal.getIndex(locationIn));
 	}
 	
-	public void removePortal (String index) {
-		this.portals.remove(index);
+	public String removePortal (String index) {
+		Portal portal = this.portals.remove(index);
 		this.savePortals();
+		return portal == null ? "" : index;
 	}
 	
 	public Portal getPortal (Location locationIn) {
@@ -61,20 +78,46 @@ public final class DungeonManager {
 		return this.portals.get(index);
 	}
 	
+	public List<Portal> listPortals () {
+		return new ArrayList<>(this.portals.values());
+	}
+	
+	public List<String> listIndices () {
+		return new ArrayList<>(this.portals.keySet());
+	}
+	
+	public void loadPortals () {
+		try (Stream<String> stream = Files.lines(this.PORTALS_FILE.toPath())) {
+			stream.forEach(line -> {
+				this.addPortal(MYDungeon.parser.parse(line));
+			});
+		} catch (IOException e) {
+			MYDungeon.LOG.warning("Failed to load portals from the disk.");
+			MYDungeon.LOG.warning(e.toString());
+		} catch (PortalCountExceedException e) {
+			MYDungeon.LOG.warning("Failed to add portals to the server.");
+			MYDungeon.LOG.warning(e.toString());
+		}
+	}
+	
 	public void savePortals () {
 		if (this.portals.size() == 0) return;
 		
-		StringBuilder builder = new StringBuilder();
+		List<String> content = new ArrayList<>();
 		for (Portal portal : this.portals.values()) {
-			builder.append(portal.toString() + "\n");
+			content.add(MYDungeon.parser.stringify(portal));
 		}
 		
 		try {
-			Files.write(builder.toString(), this.PORTALS_FILE, Charsets.UTF_8);
+			Files.write(this.PORTALS_FILE.toPath(), content);
 		} catch (IOException e) {
 			MYDungeon.LOG.warning("Failed to save portals to the disk.");
 			MYDungeon.LOG.warning(e.toString());
 		}
+	}
+	
+	public void loadAll () {
+		this.loadPortals();
 	}
 	
 	public void saveAll () {

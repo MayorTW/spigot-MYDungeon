@@ -1,5 +1,9 @@
 # misc
 lang: ""
 
+# command util
+enable-tabComplete-portalIndex: true
+
 # dungeon management
 max-dungeons: 10
+max-portals: 10

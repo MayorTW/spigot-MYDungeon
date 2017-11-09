@@ -1,77 +1,63 @@
 package tw.mayortw.mydungeon.portal;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 
 import tw.mayortw.mydungeon.MYDungeon;
-import tw.mayortw.mydungeon.exception.PortalTagException;
+import tw.mayortw.mydungeon.exception.PortalCountExceedException;
 import tw.mayortw.mydungeon.i18n.I18n;
 
-public class PortalHandler implements Listener{
-//	private Map<UUID, Block> dirtyPortals = new HashMap<>();
-//	
-//	@EventHandler(priority = EventPriority.HIGH)
-//	public void onSignEdited (SignChangeEvent e) {
-//		if (e.getBlock().getX() != 0 || e.getBlock().getY() != -1 || e.getBlock().getZ() != 0) return;
-//		
-//		e.setCancelled(true);
-//		
-//		if (!e.getPlayer().hasPermission("mydungeon.portal.config")
-//				|| !this.dirtyPortals.containsKey(e.getPlayer().getUniqueId())) return;
-//		
-//		String content = String.join("\n", e.getLines());
-//
-//		// extract the first tag, RegExp = "^.*?(?:< *dungeon (.*?) */?>.*)*$"
-//		// extract the last tag, RegExp = "^.*?(?:< *dungeon (.*?) */?>.*?)*$"
-//		// if no tag is found, an empty string is returned
-//		String attrStr = content.replaceAll("^.*?(?:(< *dungeon +.*? */?>).*?)*$", "$1");
-//		
-//		if (attrStr.isEmpty()) return;
-//		
-//		PortalTag tagObj;
-//		try{
-//			tagObj = new PortalTag(attrStr);
-//		} catch (PortalTagException err) {
-//			MYDungeon.LOG.warning("Failed to initiate a dungeon portal.");
-//			MYDungeon.LOG.warning(err.toString());
-//			
-//			return;
-//		}
-//		
-//		MYDungeon.dungeonManager.addPortal(
-//				tagObj.createPortal(this.dirtyPortals.get(e.getPlayer().getUniqueId())));
-//		
-//		// clear all dungeon tags in the content of a sign
-//		String[] contentNoTags = content.replaceAll("< *dungeon +.*? */?>", "").split("\n");
-//		for (int i = 0; i < contentNoTags.length; i++) {
-//			e.setLine(i, contentNoTags[i]);
-//		}
-//	}
+public class PortalHandler implements Listener {
+	/**
+	 * To stop anyone from breaking the portal, the listen should be the highest priority
+	 * @param e
+	 */
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onSignBroken (BlockBreakEvent e) {
+		if (isValidMaterial(e.getBlock().getType())) {
+			if (hasPermission(e.getPlayer())) {
+				I18n i18n = I18n.get(e.getPlayer().getLocale());
+				String invoice = MYDungeon.dungeonManager.removePortal(e.getBlock().getLocation());
+				if (!invoice.isEmpty()) {
+					e.getPlayer().sendMessage(i18n.translate("config.remove", invoice));
+				}
+			} else {
+				e.setCancelled(true);
+			}			
+		}
+	}
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onSignClicked (PlayerInteractEvent e) {
-		if (e.getClickedBlock() != null && e.getClickedBlock().getType() == Material.SIGN_POST) {
-			if (e.getAction() == Action.RIGHT_CLICK_BLOCK
-					&& !e.getPlayer().isSneaking()) {
+		if (clickOnBlock(e.getClickedBlock()) && isValidMaterial(e.getClickedBlock().getType())) {
+			I18n i18n = I18n.get(e.getPlayer().getLocale());
+			if (tryToActivatePortal(e.getAction(), e.getPlayer())) {
 				Portal portal = MYDungeon.dungeonManager.getPortal(e.getClickedBlock().getLocation());
 				if (portal != null && portal.isPlayerAllowed(e.getPlayer())) {
 					// let the player join the dungeon
 					portal.teleportPlayer(e.getPlayer());
 				}
-			} else if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getPlayer().isSneaking()
-					&& e.getPlayer().hasPermission("mydungeon.portal.config")) {
+			} else if (tryToConfigPortal(e.getAction(), e.getPlayer()) && hasPermission(e.getPlayer())) {
 				ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
-				if (item.getType() != Material.BOOK_AND_QUILL) {
+				if (!isConfigBook(item.getType())) {
+					String dungeonTag = "<dg w=world x=0 y=0 z=0>";
+					Portal existingPortal = null;
+					if ((existingPortal = MYDungeon.dungeonManager.getPortal(e.getClickedBlock().getLocation())) != null) {
+						dungeonTag = MYDungeon.parser.getDungeonMeta(existingPortal);
+					}
+					
 					ItemStack configBook = new ItemStack(Material.BOOK_AND_QUILL);
 					BookMeta meta = (BookMeta) configBook.getItemMeta();
 					
-					I18n i18n = I18n.get(e.getPlayer().getLocale());
 					meta.setDisplayName(i18n.translate("configbook.displayname"));
 					meta.setAuthor(MYDungeon.plugin.getName());
 					meta.setLore(null);
@@ -79,25 +65,59 @@ public class PortalHandler implements Listener{
 					
 					int pageIndex = 1;
 					String key = String.format("configbook.content.page%d", pageIndex);
-					for (; i18n.has(key); key = String.format("configbook.content.page%d", ++pageIndex)) {
+					while (true) {
 						meta.addPage("");
-						meta.setPage(pageIndex, i18n.translate(key));
+						String nextKey = String.format("configbook.content.page%d", pageIndex + 1);
+						if (!i18n.has(nextKey)) {
+							meta.setPage(pageIndex++, i18n.translate(key) + "\n\n" + dungeonTag);
+							break;
+						}
+						meta.setPage(pageIndex++, i18n.translate(key));
+						key = nextKey;
 					}
 
 					configBook.setItemMeta(meta);
 					e.getPlayer().getInventory().addItem(configBook);
 				} else {
 					BookMeta meta = (BookMeta) item.getItemMeta();
-					String content = String.join(" ", meta.getPages());
+					Portal portal = MYDungeon.parser.createPortal(e.getClickedBlock().getLocation(), 
+							String.join(" ", meta.getPages()));
 					try {
-						Portal portal = new Portal(e.getClickedBlock().getLocation(), content);
-						MYDungeon.dungeonManager.addPortal(portal);
-					} catch (PortalTagException err) {
-						MYDungeon.LOG.warning("Failed to initiate a portal.");
+						String invoice = MYDungeon.dungeonManager.addPortal(portal);
+						item.setAmount(0);
+						e.getPlayer().sendMessage(i18n.translate("config.success", invoice));
+					} catch (PortalCountExceedException err) {
+						e.getPlayer().sendMessage(i18n.translate("config.fail"));
+						MYDungeon.LOG.warning("Failed to config or add a portal.");
 						MYDungeon.LOG.warning(err.toString());
 					}
+					
 				}
 			}
 		}
+	}
+	
+	private boolean clickOnBlock (Block blockIn) {
+		return blockIn != null;
+	}
+	
+	private boolean hasPermission (Player playerIn) {
+		return playerIn.hasPermission("mydungeon.portal.config");
+	}
+	
+	private boolean isValidMaterial (Material materialIn) {
+		return materialIn == Material.SIGN_POST || materialIn == Material.WALL_SIGN;
+	}
+	
+	private boolean tryToConfigPortal (Action actionIn, Player playerIn) {
+		return actionIn == Action.LEFT_CLICK_BLOCK && playerIn.isSneaking();
+	}
+	
+	private boolean tryToActivatePortal (Action actionIn, Player playerIn) {
+		return actionIn == Action.RIGHT_CLICK_BLOCK && !playerIn.isSneaking();
+	}
+	
+	private boolean isConfigBook (Material materialIn) {
+		return materialIn == Material.BOOK_AND_QUILL || materialIn == Material.WRITTEN_BOOK;
 	}
 }

@@ -11,11 +11,13 @@ import java.util.Map;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.momocow.common.utils.JarUtils;
+import me.momocow.common.util.JarUtils;
 import tw.mayortw.mydungeon.i18n.I18n;
+import tw.mayortw.mydungeon.portal.Portal;
 import tw.mayortw.mydungeon.portal.PortalHandler;
 
 public class MYDungeonPlugin extends JavaPlugin {
@@ -38,15 +40,53 @@ public class MYDungeonPlugin extends JavaPlugin {
 	
 	@Override
 	public boolean onCommand (CommandSender sender, Command command, String label, String[] args) {
-//		if(args[0].equals("create")){
-//			ArrayList<Player> partyPlayers = new ArrayList<Player>();
-//			partyPlayers.add(this.getServer().getPlayer((sender.getName())));
-//			for(int i = 1; i < args.length; i++){
-//				partyPlayers.add(this.getServer().getPlayer(args[i]));
-//			}
-//			MYDungeon.dungeonManager.createDungeon(partyPlayers.toArray(new Player[]{}));
-//		}
-		return true;
+		if(args.length >= 2 && args[0].equals("portal")){
+			switch (args[1]) {
+				case "list":
+					List<String> portals = new ArrayList<>();
+					MYDungeon.dungeonManager.listPortals().forEach(portal -> {
+						portals.add(MYDungeon.parser.stringify(portal));
+					});
+					if (portals.size() > 0){
+						sender.sendMessage(portals.toArray(new String[portals.size()]));
+					} else {
+						I18n i18n = sender instanceof Player ? I18n.get(((Player) sender).getLocale()) : I18n.get();
+						sender.sendMessage(i18n.translate("command.reply.portal-list-empty"));
+					}
+					return true;
+				default:
+					Portal portal = MYDungeon.dungeonManager.getPortal(args[1]);
+					if (portal != null) {
+						sender.sendMessage(MYDungeon.parser.stringify(portal));
+						return true;
+					}
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		List<String> candidates = new ArrayList<>();
+		if (args.length == 1) {
+			if ("portal".startsWith(args[0])) candidates.add("portal");
+		} else if (args.length == 2) {
+			if (args[0].equals("portal")) {
+				if ("list".startsWith(args[1])) {
+					candidates.add("list");
+				}
+				
+				if (this.getConfig().getBoolean("enable-tabComplete-portalIndex", false)) {
+					MYDungeon.dungeonManager.listIndices().forEach(index -> {
+						if (index.startsWith(args[1])) {
+							candidates.add(index);
+						}
+					});
+				}
+			}
+		}
+		
+		return candidates;
 	}
 	
 	public void initConfig () {

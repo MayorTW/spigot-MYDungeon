@@ -78,3 +78,9 @@ local.properties
 
 # Debug directory
 run/
+
+# Demo video
+*.mp4
+
+demo/**
+!demo/**/*.md

@@ -1,34 +1,59 @@
 ### Each line should always be a key-value pair. ###
 
+# Command
+command.reply.portal-list-empty: There is no any portal so far.
+
+# Dungeon
+dungeon.subtitle: Dungeon Area
+
 # Dungeon Configuration Book
 configbook.displayname: "Dungeon Portal Settings"
 configbook.content.page1: |
   Use §1<dg>§r or §1<dungeon>§r tag to configure a dungeon portal.
   
-  ※Once you finish the config, right click the portal sign with the config book in your main hand.
+  ※Once you finish the config, shift + left click the portal sign with the config book in your main hand.
   ※Strings and lists can use §1§nquotes (" or ')§r to preserve spaces
+
 configbook.content.page2: |
   ※Attributes： (§l*§rrequired)
-  - w|world§l*§r §8destination world name§r
-  - x§l*§r §8destination x§r
-  - y§l*§r §8destination y§r
-  - z§l*§r §8destination z§r
-  - n|name §8dungeon display name§r
-  - p|players §8player list§r
-  - t|teams §8team list§r
+  - w|world§l*§r §2string§r
+  §8destination world name§r
+  - x§l*§r §2int§r
+  §8destination x§r
+  - y§l*§r §2int§r
+  §8destination y§r
+  - z§l*§r §2int§r
+  §8destination z§r
+  
 configbook.content.page3: |
+  - f|facing §2string|float§r
+  §7[s|south|w|west|n|north|e|east]
+  §8player facing after teleporting§r
+  - n|name §2string§r
+  §8dungeon display name§r
+  - p|players §2string list§r
+  §8player list§r
+  - t|teams §2string list§r
+  §8team list§r
+
+configbook.content.page4: |
   ※List format:
   §71.§r A list of one or several player/team names, saperated with §1§ncomma (,)§r
   §72.§r Names can be prefixed by §1§nplus (+)§r or §1§nminus (-)§r operator; Plus operator allows the player right after it to join the dungeon while minus operator keeps the player away.
-configbook.content.page4: |
+
+configbook.content.page5: |
   §73.§r §1§nWildcard (*)§r means all players/teams, which can also be prefixed by operators mentioned above.
   §74.§r An empty list is default to forbid everyone to join.
-configbook.content.page5: |
+
+configbook.content.page6: |
   §75.§r Examples
   §2§np="+*,-p1,-p2"§r §7allows everyone except §4p1§r§7 and §4p2§r§7 to join.§r
   §2§nt=+t1 p=-p1§r §7allows everyone on §1t1§r§7 except §4p1§r§7 to join.§r
 
-configbook.content.page6: |
+configbook.content.page7: |
   ※Write down your config here §7§o(§r§l§7DO NOT§r§7§o include formatting codes here)§r
-  
-  
+
+# config reply
+config.success: "The portal is configured. Index: \"%s\""
+config.remove: "The portal has been removed! Index:\"%s\""
+config.fail: "Failed to configure a new portal! The max number of portals is reached!"

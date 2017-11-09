@@ -19,9 +19,9 @@ public class I18n {
 		dictionary = dictIn;
 	}
 	
-	public String translate (String key) {
+	public String translate (String key, Object... args) {
 		String translated = this.dictionary.get(key);
-		return translated == null ? key : translated;
+		return translated == null ? key : String.format(translated, args);
 	}
 	
 	public boolean has (String key) {

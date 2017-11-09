@@ -1,4 +1,4 @@
-package me.momocow.common.utils;
+package me.momocow.common.util;
 
 import java.io.File;
 import java.io.IOException;

@@ -4,7 +4,7 @@ version: 0.0.1
 commands:
   dungeon:
     aliases: dg
-    usage: "/<dungeon|dg> <action> [...args]\nSupported actions:\n  create"
+    usage: "/<dungeon|dg> <portal> <list|(portal-index)>"
     permission: mydungeon.manage
 permissions:
   mydungeon.manage:

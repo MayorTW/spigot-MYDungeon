@@ -10,18 +10,15 @@ import java.util.stream.Stream;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-
-import tw.mayortw.mydungeon.i18n.I18n;
+import tw.mayortw.mydungeon.portal.IPortalParser;
+import tw.mayortw.mydungeon.portal.PortalTagParser;
 
 public final class MYDungeon {
 	public static MYDungeonPlugin plugin;
 	public static DungeonManager dungeonManager;
+	public static IPortalParser parser;
 	public static ScoreboardManager scoreboardManager;
-	public static ProtocolManager protocolManager;
 	public static Map<String, String> serverProperties;
-	public static I18n i18n;
 	public static PluginLogger LOG;
 	
 	private static boolean _isReady = false;
@@ -29,15 +26,12 @@ public final class MYDungeon {
 	public static void init (MYDungeonPlugin pluginIn) {
 		plugin = pluginIn;
 		LOG = (PluginLogger) pluginIn.getLogger();
+		parser = new PortalTagParser();
 		
 		dungeonManager = new DungeonManager(plugin);
-		protocolManager = ProtocolLibrary.getProtocolManager();
 		scoreboardManager = plugin.getServer().getScoreboardManager();
 		serverProperties = loadServerProperties();
-		i18n = I18n.get();
-		
-		initPacketListeners();
-		
+				
 		_isReady = true;
 	}
 	
@@ -62,17 +56,5 @@ public final class MYDungeon {
 		} 
 		
 		return ret;
-	}
-	
-	private static void initPacketListeners () {
-//		protocolManager.addPacketListener(new PacketAdapter (
-//				plugin, 
-//				ListenerPriority.NORMAL, 
-//				PacketType.Play.Server.OPEN_SIGN_EDITOR) {
-//			@Override
-//			public void onPacketSending(PacketEvent event) {
-//				System.out.println(event.getPacket().getStrings());
-//			}
-//		});
 	}
 }

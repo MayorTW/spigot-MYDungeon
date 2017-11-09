@@ -1,4 +1,4 @@
-package me.momocow.common.utils;
+package me.momocow.common.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
